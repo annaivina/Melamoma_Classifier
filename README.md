@@ -4,7 +4,7 @@ This repository implements a complete deep learning pipeline for melanoma classi
 
 ## Key Features
 
-✅ Custom CNN trained from scratch
+✅ Custom CNN trained from scratch (implemented in tensorflow)
 
 ✅ Transfer learning with EfficientNetB2 + fine-tuning 
 
@@ -70,7 +70,7 @@ Standard binary accuracy is very misleading for highly imbalanced data. This doe
 
 
 ## Custom CNN model
-The baseline model is a convolutional neural networkconsisting of :
+The baseline model is a convolutional neural network consisting of :
 
 Three convolutional blocks:
  
@@ -85,6 +85,24 @@ The model configuration, the training configuration as well as model setup can b
 Due to limit resoursses, first the model has been prototyped in Google Colab notebook: https://colab.research.google.com/drive/15iZRsk7ALNFwI0LnjF6MqXW0u0ScOkrn?usp=sharing. Then, fully migrated to this modular training pipeline. 
 
 The Hyper-parameter scan  has been also performed to find the best number of filters, dropout, strieds, ect. 
+
+### Dataset handling
+
+The original ISIC dataset consists of high-resolution dermoscopic images, which are computationally expensive to train on, especially for mid-sized custom CNNs. Therefore, images were resized to 256×256 resolution (see notebook https://github.com/annaivina/Melamoma_Classifier/blob/main/datasets/Inspect_Datasets.ipynb )
+
+The lables are provided in the csv file together with additional information https://github.com/annaivina/Melamoma_Classifier/blob/main/datasets/ISIC_2020_Training_GroundTruth.csv 
+
+Additionally, the CSV file containes other information such as sex, age, ect. \
+A correlation analysis was performed to assess whether metadata like age or sex could assist prediction. Correlation coefficients were found to be low:
+
+                sex  age_approx    target\
+sex         1.000000    0.109827  0.027604\
+age_approx  0.109827    1.000000  0.086388\
+target      0.027604    0.086388  1.000000\
+
+Demographic features were not included in the model as they showed no strong correlation with the target.
+
+The train data has been devided into train and validation sample with ratio 80:20. Thus train sample has 26k and validation 6k. The splitting can also be changed in the config file. 
 
 
 
