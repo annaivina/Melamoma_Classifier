@@ -1,0 +1,54 @@
+
+#General settings for dataloder
+dataset:
+  dir_path: "/Users/annushka/Desktop/Melanoma_CLassifier/Melamoma_Classifier/datasets/preprocessed_images/" #dir where train/test folders are located
+  csv_train: "/Users/annushka/Desktop/Melanoma_CLassifier/Melanoma_all_models/Melamoma_Classifier/datasets/ISIC_2020_Training_GroundTruth.csv"
+  csv_test: "/Users/annushka/Desktop/Melanoma_CLassifier/Melanoma_all_models/Melamoma_Classifier/datasets/ISIC_2020_Test_Metadata.csv"
+  batch_size: 64
+  img_size: 256 #for the custom CNN
+  train_val_split: 0.8
+  model_name: "customCNN"
+  num_classes: 1 #aka 0 or 1 
+
+
+#Training params:
+params:
+  lr: 0.0004
+  epochs: 20 
+  lr_shedule: "cosine"
+
+model_params:
+  cnn:
+    conv_1: 16
+    conv_2: 64
+    conv_3: 128 
+    kernel_1: 5
+    kernel_2: 3
+    kernel_3: 3
+    stride_1: 1
+    stride_2: 1
+    stride_3: 2
+    dropout_1: 0.3
+    dropout_2: 0.4
+    dropout_3: 0.5
+    padding1: "valid"
+    padding2: "valid" 
+    padding3: "same"
+    l2: 0.01
+    pool_size: 2 
+    pool_strides: 2 
+  
+  dense:
+    dense_1: 256
+    dense_2: 128
+    activation: sigmoid #for binary classification 
+
+callbacks:
+  monitor: "val_loss"
+  min_lr: 0.0000001
+
+    
+
+
+
+
