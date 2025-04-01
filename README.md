@@ -10,7 +10,7 @@ This repository implements a complete deep learning pipeline for melanoma classi
 
 ✅ Vision Transformer (ViT) support
 
-✅ Synthetic data generalisation using Stable Difusion via Hugging Face 
+✅ Synthetic data generalisation using Stable Difusion via Hugging Face 🤗 
 
 ✅ Class imbalance handling: augmentation, weighting, and Focal Loss
 
@@ -21,18 +21,6 @@ This repository implements a complete deep learning pipeline for melanoma classi
 ✅ Learning rate scheduling (CosineDecay, PolynomialDecay)
 
 ✅ Modular pipeline structure wuith config-based experiment management 
-
-
-## Custom CNN model
-The baseline model is a convolutional neural networkconsisting of :
-
-Three convolutional blocks:
- 
-   -- Conv2D layers + BatchNorm + ReLU + MaxPolling + Dropout (0.3, 0.4 and 0.5 in each conv block)
-   -- L2 regularization applied to convolutional layers (0.001)
-   
-Delse layers for classification with last signmoid activation 
-
 
 
 ## Class imbalance handling
@@ -46,20 +34,20 @@ The issue is addressed using the following twiks:
 ### 2. Selective data augmentation 
 The augmentation is applied only to the positive class (aka target = 1). The augmentation includes: 
 
-   -- random_flip_left_right
-   -- random_flip_up_down
-   -- random_brightness
-   -- image.random_contrast
-   -- rot90
-   -- random_hue
-   -- transpose
-   -- rot90(image, k=tf.random.uniform(shape=[], minval=0, maxval=4, dtype=tf.int32))
-   -- random_saturation(image, 0.5, 1.8)
-   -- image.random_jpeg_quality(image, 70, 90)
+   -- random_flip_left_right\
+   -- random_flip_up_down\
+   -- random_brightness\
+   -- image.random_contrast\
+   -- rot90\
+   -- random_hue\
+   -- transpose\
+   -- rot90(image, k=tf.random.uniform(shape=[], minval=0, maxval=4, dtype=tf.int32))\
+   -- random_saturation(image, 0.5, 1.8)\
+   -- image.random_jpeg_quality(image, 70, 90)\
 
 💡 Note: Although libraries like Albumentations can be used, TensorFlow’s native ops (inside a @tf.function) are faster.
 
-### Special loss
+### 3. Special losses
 Focal loss, specifically BinaryFocalCrossentropy(), is used to emphasize learning on harder to classify samples.
 
    Tensorflow implementation is inspired by the original paper PyTorch implementation  https://github.com/kaidic/LDAM-DRW 
@@ -71,6 +59,7 @@ Focal loss, specifically BinaryFocalCrossentropy(), is used to emphasize learnin
 Lr schedulers tend to help to reduce overfitting significantly. Use CosibeDecay lr shcedular. Shows much better performance theen the static learning rate. 
 PolynomialDecay scheduler is also implemented for the test purposes. 
 
+
 ## Evaluation Metrics
 
 Standard binary accuracy is very misleading for highly imbalanced data. This doesnt seem to be addressed in the majority papers where ISIC data is classified using NN. Instead of classical accuracy following metrics are more tracked:
@@ -80,7 +69,17 @@ Standard binary accuracy is very misleading for highly imbalanced data. This doe
 3. AUC (ROC) and AUC(PR) metrics better suiting for this task 
 
 
-## Training configurations 
+## Custom CNN model
+The baseline model is a convolutional neural networkconsisting of :
+
+Three convolutional blocks:
+ 
+   -- Conv2D layers + BatchNorm + ReLU + MaxPolling + Dropout (0.3, 0.4 and 0.5 in each conv block)
+   -- L2 regularization applied to convolutional layers (0.001)
+   
+Delse layers for classification with last signmoid activation 
+
+### Training configurations 
 The model configuration, the training configuration as well as model setup can be found in Melanoma_Classifier/configs/cnn_clussifier.yaml
 
 Due to limit resoursses, first the model has been prototyped in Google Colab notebook: https://colab.research.google.com/drive/15iZRsk7ALNFwI0LnjF6MqXW0u0ScOkrn?usp=sharing. Then, fully migrated to this modular training pipeline. 
