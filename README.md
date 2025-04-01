@@ -95,10 +95,12 @@ The lables are provided in the csv file together with additional information htt
 Additionally, the CSV file containes other information such as sex, age, ect. \
 A correlation analysis was performed to assess whether metadata like age or sex could assist prediction. Correlation coefficients were found to be low:
 
-                sex  age_approx    target\
-sex         1.000000    0.109827  0.027604\
-age_approx  0.109827    1.000000  0.086388\
-target      0.027604    0.086388  1.000000\
+|            | sex      | age_approx | target   |
+|------------|----------|------------|----------|
+| sex        | 1.000000 | 0.109827   | 0.027604 |
+| age_approx | 0.109827 | 1.000000   | 0.086388 |
+| target     | 0.027604 | 0.086388   | 1.000000 |
+
 
 Demographic features were not included in the model as they showed no strong correlation with the target.
 
