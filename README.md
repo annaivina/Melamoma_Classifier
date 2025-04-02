@@ -80,11 +80,27 @@ Three convolutional blocks:
 Delse layers for classification with last signmoid activation 
 
 ### Training configurations 
-The model configuration, the training configuration as well as model setup can be found in Melanoma_Classifier/configs/cnn_clussifier.yaml
+The model configuration, the training configuration as well as model setup can be found in Melanoma_Classifier/configs/ (model/customCNN.yaml)
 
 Due to limit resoursses, first the model has been prototyped in Google Colab notebook: https://colab.research.google.com/drive/15iZRsk7ALNFwI0LnjF6MqXW0u0ScOkrn?usp=sharing. Then, fully migrated to this modular training pipeline. 
 
-The Hyper-parameter scan  has been also performed to find the best number of filters, dropout, strieds, ect. 
+A hyperparameter scan was also performed to find the optimal number of filters, dropout rates, strides, and other model parameters.
+
+The model performed best with:
+
+ \item batch_size = 32
+
+ \item learning_rate = 0.0001
+
+ \item cosine learning rate scheduler enabled
+
+The evaluation metric used was balanced accuracy, which is especially important for this imbalanced dataset (ISIC). The best performance was achieved at epoch 11, with:
+
+ -- Balanced Accuracy: 73%
+
+ -- AUC (ROC): 82% 
+ 
+ ![train/validation loss curves ](images/loss_batch32_customNN.png)
 
 ### Dataset handling
 
