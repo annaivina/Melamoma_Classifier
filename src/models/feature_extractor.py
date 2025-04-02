@@ -29,57 +29,59 @@ class Customconv2D(tf.keras.layers.Layer):
 
 
 class FeatureExtractor(tf.keras.layers.Layer):
-  def __init__(self, config):
+  def __init__(self, cfg):
     super(FeatureExtractor, self).__init__(name="feature_extractor")
   
     self.block_1 = tf.keras.Sequential([
-                                         Customconv2D(filters=config['model_params']['cnn']['conv_1'], 
-                                                      kernel_size=config['model_params']['cnn']['kernel_1'], 
-                                                      strides=config['model_params']['cnn']['stride_1'], 
-                                                      padding=config['model_params']['cnn']['padding1'], 
-                                                      l2=config['model_params']['cnn']['l2'], name='conv1_block1'),
+                                         Customconv2D(filters=cfg.model.cnn.conv_1, 
+                                                      kernel_size=cfg.model.cnn.kernel_1, 
+                                                      strides=cfg.model.cnn.stride_1, 
+                                                      padding=cfg.model.cnn.padding1, 
+                                                      l2=cfg.model.cnn.l2, name='conv1_block1'),
                                                       
-                                         Customconv2D(filters=config['model_params']['cnn']['conv_1']*2, 
-                                                     kernel_size=config['model_params']['cnn']['kernel_1'], 
-                                                     strides=config['model_params']['cnn']['stride_1'], 
-                                                     padding=config['model_params']['cnn']['padding1'], 
-                                                     l2=config['model_params']['cnn']['l2'], name='conv2_block1'),
+                                         Customconv2D(filters=cfg.model.cnn.conv_1*2, 
+                                                     kernel_size=cfg.model.cnn.kernel_1, 
+                                                     strides=cfg.model.cnn.stride_1, 
+                                                     padding=cfg.model.cnn.padding1, 
+                                                     l2=cfg.model.cnn.l2, name='conv2_block1'),
                                                      
-                                         MaxPool2D(pool_size=config['model_params']['cnn']['pool_size'], strides=config['model_params']['cnn']['pool_strides'], name='maxp1_block1'),
-                                         Dropout(config['model_params']['cnn']['dropout_1'],name='drop1_block1')
+                                         MaxPool2D(pool_size=cfg.model.cnn.pool_strides, strides=cfg.model.cnn.pool_strides, name='maxp1_block1'),
+                                         Dropout(cfg.model.cnn.dropout_1,name='drop1_block1')
     ])
     
     self.block_2 = tf.keras.Sequential([
-                                         Customconv2D(filters=config['model_params']['cnn']['conv_2'], 
-                                                      kernel_size=config['model_params']['cnn']['kernel_2'], 
-                                                      strides=config['model_params']['cnn']['stride_2'], 
-                                                      padding=config['model_params']['cnn']['padding2'], 
-                                                      l2=config['model_params']['cnn']['l2'], name='conv3_block2'),
+                                         Customconv2D(filters=cfg.model.cnn.conv_2, 
+                                                      kernel_size=cfg.model.cnn.kernel_2, 
+                                                      strides=cfg.model.cnn.stride_2, 
+                                                      padding=cfg.model.cnn.padding2, 
+                                                      l2=cfg.model.cnn.l2, name='conv3_block2'),
                                          
-                                         Customconv2D(filters=config['model_params']['cnn']['conv_2']*2, 
-                                                      kernel_size=config['model_params']['cnn']['kernel_2'], 
-                                                      strides=config['model_params']['cnn']['stride_2'], 
-                                                      padding=config['model_params']['cnn']['padding2'], 
-                                                      l2=config['model_params']['cnn']['l2'], name='conv4_block2'),
-                                         MaxPool2D(pool_size=config['model_params']['cnn']['pool_size'], strides=config['model_params']['cnn']['pool_strides'], name='maxp2_block2'),
-                                         Dropout(config['model_params']['cnn']['dropout_2'], name='drop2_block2')
+                                         Customconv2D(filters=cfg.model.cnn.conv_2*2, 
+                                                      kernel_size=cfg.model.cnn.kernel_2, 
+                                                      strides=cfg.model.cnn.stride_2, 
+                                                      padding=cfg.model.cnn.padding2, 
+                                                      l2=cfg.model.cnn.l2, name='conv4_block2'),
+                                         MaxPool2D(pool_size=cfg.model.cnn.pool_size, strides=cfg.model.cnn.pool_strides, name='maxp2_block2'),
+                                         
+                                         Dropout(cfg.model.cnn.dropout_2, name='drop2_block2')
     ])
 
     self.block_3 = tf.keras.Sequential([
-                                         Customconv2D(filters=config['model_params']['cnn']['conv_3'], 
-                                                      kernel_size=config['model_params']['cnn']['kernel_3'], 
-                                                      strides=config['model_params']['cnn']['stride_3'], 
-                                                      padding=config['model_params']['cnn']['padding3'], 
-                                                      l2=config['model_params']['cnn']['l2'], name='conv5_block3'),
+                                         Customconv2D(filters=cfg.model.cnn.conv_3, 
+                                                      kernel_size=cfg.model.cnn.kernel_3, 
+                                                      strides=cfg.model.cnn.stride_3, 
+                                                      padding=cfg.model.cnn.padding3, 
+                                                      l2=cfg.model.cnn.l2, name='conv5_block3'),
 
-                                         Customconv2D(filters=config['model_params']['cnn']['conv_3'], 
-                                                      kernel_size=config['model_params']['cnn']['kernel_3'], 
-                                                      strides=config['model_params']['cnn']['stride_3'], 
-                                                      padding=config['model_params']['cnn']['padding3'], 
-                                                      l2=config['model_params']['cnn']['l2'], name='conv6_block3'),
+                                         Customconv2D(filters=cfg.model.cnn.conv_3, 
+                                                      kernel_size=cfg.model.cnn.kernel_3, 
+                                                      strides=cfg.model.cnn.stride_3, 
+                                                      padding=cfg.model.cnn.padding3, 
+                                                      l2=cfg.model.cnn.l2, name='conv6_block3'),
 
-                                         MaxPool2D(pool_size=config['model_params']['cnn']['pool_size'], strides=config['model_params']['cnn']['pool_strides'], name='maxp3_block3'),
-                                         Dropout(config['model_params']['cnn']['dropout_3'], name='drop3_block3')
+                                         MaxPool2D(pool_size=cfg.model.cnn.pool_size, strides=cfg.model.cnn.pool_strides, name='maxp3_block3'),
+                                         
+                                         Dropout(cfg.model.cnn.dropout_3, name='drop3_block3')
 ])
 
 

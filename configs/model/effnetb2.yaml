@@ -1,0 +1,5 @@
+#Parameters for dense layer  of EffB2
+name: "effnetb2"
+dense:
+  activation: sigmoid #for binary classification 
+  dropout: 0.5

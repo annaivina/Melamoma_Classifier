@@ -18,17 +18,22 @@ def calculate_class_weights(dataset):
 
 
 
-def get_lr_shedular(config, len_y_train, type):
+def get_lr_shedular(cfg, len_y_train, type, mode):
      ##If not opther model introduce the lr shedular 
-    steps_per_epoch = len_y_train // config['dataset']['batch_size']
-    decay_steps = steps_per_epoch * config['params']['epochs']
+    steps_per_epoch = len_y_train // cfg.batch_size
+    if mode == 'train':
+        decay_steps = steps_per_epoch * cfg.epochs
+    else: 
+        decay_steps = steps_per_epoch * cfg.finetune.epochs
+
     if type == 'cosine':
-        return tf.keras.optimizers.schedules.CosineDecay(initial_learning_rate=config['params']['lr'],  # Start low to avoid instability
+        return tf.keras.optimizers.schedules.CosineDecay(initial_learning_rate=cfg.lr if cfg.mode=='train' else cfg.finetune.lr,  # Start low to avoid instability
                                                          decay_steps=decay_steps,  # Number of steps before the first decay
-                                                         alpha=config['callbacks']['min_lr']  # Minimum learning rate to prevent model collapse
+                                                         alpha=cfg.min_lr  # Minimum learning rate to prevent model collapse
                                                          )
     elif type=='poly':
-        return tf.keras.optimizers.schedules.PolynomialDecay(initial_learning_rate=config['params']['lr'],
+        return tf.keras.optimizers.schedules.PolynomialDecay(initial_learning_rate=cfg.lr if cfg.mode=='train' else cfg.finetune.lr,
                                                              decay_steps= decay_steps,
-                                                             end_learning_rate=config['callbacks']['min_lr'],
+                                                             end_learning_rate=cfg.min_lr,
                                                              power=2.0)
+    

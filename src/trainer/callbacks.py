@@ -6,7 +6,7 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
 
-def get_callbacks(config, experiment_name='', model_name='', use_lrshedular=False):
+def get_callbacks(cfg, experiment_name='', model_name='', use_lrshedular=False):
     
     if experiment_name=='' and model_name=='':
         logging.error("You didnt specify experiment name or model. Plase make sure you specify both")
@@ -24,15 +24,15 @@ def get_callbacks(config, experiment_name='', model_name='', use_lrshedular=Fals
         logging.error("Failed to create directories: {e}")
         return None
     
-    early_stopping = tf.keras.callbacks.EarlyStopping(monitor=config['callbacks']['monitor'], patience=3)
-    model_checkpoint = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_dir+'best_model.keras', monitor=config['callbacks']['monitor'])
+    early_stopping = tf.keras.callbacks.EarlyStopping(monitor=cfg.monitor, patience=3)
+    model_checkpoint = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_dir+'best_model.keras', monitor=cfg.monitor)
     csv_logger = tf.keras.callbacks.CSVLogger(filename=log_dir+'training.csv', separator='.')
 
 
     callbacks = [early_stopping, model_checkpoint, csv_logger]
 
     if use_lrshedular == True:
-        lr_shedular = tf.keras.callbacks.ReduceLROnPlateau(monitor=config['callbacks']['monitor'], factor=0.5, patience=3, min_lr=config['callbacks']['min_lr'])
+        lr_shedular = tf.keras.callbacks.ReduceLROnPlateau(monitor=cfg.monitor, factor=0.5, patience=3, min_lr=cfg.min_lr)
         callbacks.append(lr_shedular)
 
 

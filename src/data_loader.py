@@ -82,7 +82,7 @@ class DataLoader:
             
         #Resize
         if not is_eff_net:
-            image = tf.cast(image, tf.float32) / 255.0
+            image = tf.cast(image, tf.float32) / 255.0  #Dont resize for the eff net because it does internally
         
         image.set_shape([self.img_size, self.img_size, 3])
             

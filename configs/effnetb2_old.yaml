@@ -5,9 +5,9 @@ dataset:
   csv_train: "/Users/annushka/Desktop/Melanoma_CLassifier/Melanoma_all_models/Melamoma_Classifier/datasets/ISIC_2020_Training_GroundTruth.csv"
   csv_test: "/Users/annushka/Desktop/Melanoma_CLassifier/Melanoma_all_models/Melamoma_Classifier/datasets/ISIC_2020_Test_Metadata.csv"
   batch_size: 32
-  img_size: 256 #for the custom CNN
+  img_size: 260
   train_val_split: 0.8
-  model_name: "customCNN"
+  model_name: "effnetb2"
   num_classes: 1 #aka 0 or 1 
 
 
@@ -18,38 +18,18 @@ params:
   lr_shedule: "cosine"
   label_smoothing: 0.1
 
-model_params:
-  cnn:
-    conv_1: 16
-    conv_2: 64
-    conv_3: 128 
-    kernel_1: 5
-    kernel_2: 3
-    kernel_3: 3
-    stride_1: 1
-    stride_2: 1
-    stride_3: 2
-    dropout_1: 0.3
-    dropout_2: 0.4
-    dropout_3: 0.5
-    padding1: "valid"
-    padding2: "valid" 
-    padding3: "same"
-    l2: 0.01
-    pool_size: 2 
-    pool_strides: 2 
+finetune:
+  lr:
+  epochs: 20
+  num_layers: 10
+  lr_shefule: "cosine"
+  label_smoothing: 0.1
   
+model_params:
   dense:
-    dense_1: 256
-    dense_2: 128
     activation: sigmoid #for binary classification 
+    dropout: 0.5
 
 callbacks:
   monitor: "val_loss"
   min_lr: 0.0000001
-
-    
-
-
-
-

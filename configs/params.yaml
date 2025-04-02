@@ -1,0 +1,5 @@
+#Training parameters 
+lr: 0.0004
+epochs: 20 
+lr_shedule: "cosine"
+label_smoothing: 0.1

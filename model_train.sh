@@ -1,1 +1,1 @@
-python3 train.py --mode train --experiment_name test_experiment --config_path configs/cnn_clussifier.yaml
+python3 train.py mode=train experiment_name=test_experiment 

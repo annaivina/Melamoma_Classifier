@@ -3,12 +3,12 @@ import tensorflow as tf
 import os 
 
 
+
 class Classifier(tf.keras.Model):
     def __init__(self, model, experiment_name=''):
         super(Classifier,self).__init__(name='CNNTrainer')
         self.model = model
         self.experiment_name= experiment_name
-        self.experiment = self.experiment_logger() if experiment_name else None
         
 
     
@@ -41,15 +41,11 @@ class Classifier(tf.keras.Model):
 
         self.optimizer.apply_gradients(zip(gradients, training_vars))
 
-        if self.experiment:
-            self.experiment.log_metric("Train_loss",loss)
-       
         for metric in self.metrics:
             metric.update_state(y, y_pred, sample_weight = sample_weight)
-            if self.experiment:
-                self.experiment.log_metric(f"Train_{metric.name}",metric.result())
+           
 
-        result = {'loss': loss.numpy(),  **{m.name: m.result().numpy() for m in self.metrics}}#so we can log it into comet
+        result = {'loss': loss,  **{m.name: m.result() for m in self.metrics}}#so we can log it into comet
         
         return result
     
@@ -63,29 +59,15 @@ class Classifier(tf.keras.Model):
         y_pred = self.model(X, training=False)
         loss = self.loss(y, y_pred, sample_weight = sample_weight)
 
-        if self.experiment:
-            self.experiment.log_metric("Valid_loss",loss)
 
         for metric in self.metrics:
             metric.update_state(y, y_pred, sample_weight = sample_weight)
-            if self.experiment:
-                self.experiment.log_metric(f"Valid_{metric.name}",metric.result())
+         
         
-        result = {'loss': loss.numpy(),  **{m.name: m.result().numpy() for m in self.metrics}}
+        result = {'loss': loss,  **{m.name: m.result() for m in self.metrics}}
         
         return result
-    
-    def on_train_end(self, logs=None):
-        if self.experiment:
-            self.experiment.end()
+
 
     
-
-    def experiment_logger(self):
-
-        experiment_save = comet_ml.Experiment(api_key = os.getenv("COMET_API_KEY"),
-                                              project_name=self.experiment_name)
-        
-        return experiment_save
-
 

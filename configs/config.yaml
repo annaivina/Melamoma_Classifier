@@ -1,0 +1,12 @@
+defaults:
+  - _self_
+  - dataset
+  - model: customCNN
+  - params
+  - callbacks
+#  - finetune: finetune
+
+
+experiment_name: "melanoma_cnn"
+mode: train
+  
