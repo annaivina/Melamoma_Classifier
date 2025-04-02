@@ -88,11 +88,14 @@ A hyperparameter scan was also performed to find the optimal number of filters, 
 
 The model performed best with:
 
+\begin{itemize}
  \item batch_size = 32
 
  \item learning_rate = 0.0001
 
  \item cosine learning rate scheduler enabled
+
+ \end{itemize}
 
 The evaluation metric used was balanced accuracy, which is especially important for this imbalanced dataset (ISIC). The best performance was achieved at epoch 11, with:
 
