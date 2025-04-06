@@ -60,29 +60,25 @@ def pipeline(cfg: DictConfig) -> None:
     class_weights_dict, len_y_train = calculate_class_weights(train_data)
 
     #Define metrics to use:
-    metrics = [BalancedAccuracy(name='accuracyB'), tf.keras.metrics.BinaryAccuracy()]#While using custom loop you need to specify fully your accuracy 
+    metrics = [BalancedAccuracy(name='accuracyB'), tf.keras.metrics.BinaryAccuracy(), tf.keras.metrics.AUC(curve="ROC")]#While using custom loop you need to specify fully your accuracy 
    
 
     ##mode=train (stage 1 for transfer learning)
     if cfg.mode == 'train':
         logging.info("The mode is train. Start the training cycle")
-        model.feature_extractor.trainable = False #Just to make sure its not going to train
+        if cfg.model.name == 'effnetb2':
+            model.feature_extractor.trainable = False #Just to make sure its not going to train
+        
         model_trainer = Classifier(model, experiment_name=cfg.experiment_name)
 
         lr_schedule = get_lr_shedular(cfg, len_y_train, type=cfg.lr_shedule, mode=cfg.mode)
-
-        if cfg.model.name == 'customCNN':
-            callbacks = get_callbacks(cfg, experiment_name=cfg.experiment_name, model_name=cfg.model.name, use_lrshedular=False)
+       
+        callbacks = get_callbacks(cfg, experiment_name=cfg.experiment_name, model_name=cfg.model.name, use_lrshedular=False)
             
-        elif cfg.model.name == 'effnetb2':
-            #Need to check that cosine is worse then usual lr shedular 
-            callbacks = get_callbacks(cfg, experiment_name=cfg.experiment_name, model_name=cfg.model.name, use_lrshedular=True)
-            
-        
 
         logging.info("Compiling the model")
-        model_trainer.compile(optimizer=tf.keras.optimizers.Adam(learning_rate = lr_schedule if cfg.model.name=='customCNN' else cfg.params.lr),
-                              loss=tf.keras.losses.BinaryFocalCrossentropy(label_smoothing=cfg.label_smoothing),
+        model_trainer.compile(optimizer=tf.keras.optimizers.Adam(learning_rate = lr_schedule if cfg.model.name=='customCNN' else cfg.lr),
+                              loss=tf.keras.losses.BinaryFocalCrossentropy(label_smoothing=cfg.label_smoothing, gamma=cfg.gamma),
                               metrics_list=metrics)
         
         logging.info("Start fitting")
@@ -105,14 +101,14 @@ def pipeline(cfg: DictConfig) -> None:
 
         lr_schedule = get_lr_shedular(cfg, len_y_train, type=cfg.finetune.lr_shedule, mode=cfg.mode)
 
-        logging.info("Compiling the model")
+        logging.info("Compiling the model to fine-tune")
         model_trainer.compile(optimizer=tf.keras.optimizers.Adam(learning_rate = lr_schedule),
-                              loss=tf.keras.losses.BinaryFocalCrossentropy(label_smoothing=cfg.finetune.label_smoothing),
+                              loss=tf.keras.losses.BinaryFocalCrossentropy(label_smoothing=cfg.finetune.label_smoothing, gamma=cfg.finetune.gamma),
                               metrics_list=metrics)
         
         
         callbacks = get_callbacks(experiment_name=cfg.experiment_name, model_name=cfg.model.name, use_lrshedular=False)
-        logging.info("Start the fitting...")
+        logging.info("Start the fine-tuning...")
         model_trainer.fit(train_data, 
                           validation_data=valid_data,
                           epochs=cfg.finetune.epochs, 

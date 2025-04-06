@@ -9,6 +9,8 @@ class MelanomaClassifier(tf.keras.Model):
     def __init__(self, cfg):
         super(MelanomaClassifier, self).__init__(name='customNN')
 
+        self.cfg = cfg
+
         self.feature_extractor = FeatureExtractor(cfg)
         #self.flatten = Flatten() seems like globaverage pool is more reccomnded since it doesnt remove spacial info
         self.glob_avr_pool = GlobalAveragePooling2D()
@@ -24,6 +26,16 @@ class MelanomaClassifier(tf.keras.Model):
         x = self.dense_2(x)
 
         return self.output_layer(x)
+    
+    def get_config(self):
+       config = super().get_config()
+       config.update({"config": self.cfg})
+       return config
+    
+    
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)
 
   
 

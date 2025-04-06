@@ -3,3 +3,5 @@ lr: 0.0001
 epochs: 20 
 lr_shedule: "cosine"
 label_smoothing: 0.1
+restore_best_weights: True
+gamma: 3

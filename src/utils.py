@@ -23,8 +23,8 @@ def get_lr_shedular(cfg, len_y_train, type, mode):
     steps_per_epoch = len_y_train // cfg.batch_size
     if mode == 'train':
         decay_steps = (steps_per_epoch * cfg.epochs) + 1 #what ever reason the is around problem 
-    else: 
-        decay_steps = steps_per_epoch * cfg.finetune.epochs 
+    elif mode=='finetune': 
+        decay_steps = steps_per_epoch * cfg.finetune.epochs +1 
 
     if type == 'cosine':
         return tf.keras.optimizers.schedules.CosineDecay(initial_learning_rate=cfg.lr if cfg.mode=='train' else cfg.finetune.lr,  # Start low to avoid instability

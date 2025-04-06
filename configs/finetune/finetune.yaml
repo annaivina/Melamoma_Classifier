@@ -1,6 +1,7 @@
 #This fine tuning is for the EffB2
-lr:
+lr: 0.00001
 epochs: 20
 num_layers: 10
 lr_shedule: "cosine"
 label_smoothing: 0.1
+gamma: 3

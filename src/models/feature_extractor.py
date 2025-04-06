@@ -7,6 +7,13 @@ class Customconv2D(tf.keras.layers.Layer):
   def __init__(self, filters, kernel_size, strides, padding='valid', l2 = 0.0, name=None):
     super(Customconv2D, self).__init__(name=name)
 
+    self.filters = filters
+    self.kernel_size = kernel_size
+    self.strides = strides
+    self.padding = padding
+    self.l2 = l2
+    self.name = name
+
     self.custom_conv2d = Conv2D(filters=filters,
                                 kernel_size=kernel_size,
                                 strides=strides,
@@ -24,6 +31,22 @@ class Customconv2D(tf.keras.layers.Layer):
     x = self.custom_conv2d(input)
     x = self.batch_norm(x, training=training)
     return x
+
+  def get_config(self):
+    config = super().get_config()
+    config.update({"filters": self.filters,
+                   "kernel_size": self.kernel_size,
+                   "strides": self.strides,
+                   "padding": self.padding,
+                   "l2": self.l2,
+                   "name": self.name})
+    return config
+
+  @classmethod
+  def from_config(cls, config):
+    return cls(**config)
+  
+
   
 
 
@@ -31,6 +54,8 @@ class Customconv2D(tf.keras.layers.Layer):
 class FeatureExtractor(tf.keras.layers.Layer):
   def __init__(self, cfg):
     super(FeatureExtractor, self).__init__(name="feature_extractor")
+
+    self.cfg = cfg 
   
     self.block_1 = tf.keras.Sequential([
                                          Customconv2D(filters=cfg.model.cnn.conv_1, 
@@ -94,3 +119,17 @@ class FeatureExtractor(tf.keras.layers.Layer):
     x = self.block_2(x, training=training)
     x = self.block_3(x, training=training)
     return x 
+  
+
+  def get_config(self):
+    config = super().get_config()
+    config.update({"config": self.cfg,
+                   "block_1": self.block_1,
+                   "block_2": self.block_2,
+                   "block_3": self.block_3,})
+    return config
+
+  @classmethod
+  def from_config(cls, config):
+    return cls(**config)
+  

@@ -48,15 +48,15 @@ The augmentation is applied only to the positive class (aka target = 1). The aug
 💡 Note: Although libraries like Albumentations can be used, TensorFlow’s native ops (inside a @tf.function) are faster.
 
 ### 3. Special losses
-Focal loss, specifically BinaryFocalCrossentropy(), is used to emphasize learning on harder to classify samples.
+Focal loss, specifically BinaryFocalCrossentropy(), is used to emphasize learning on harder to classify samples (https://arxiv.org/pdf/1708.02002 )
+Additionally, label smoothing of 0.1 is applied to reduce overconfidence in the predictions and improve generalization
 
-   Tensorflow implementation is inspired by the original paper PyTorch implementation  https://github.com/kaidic/LDAM-DRW 
-
-   Additionally, label smoothing of 0.1 is applied to reduce overconfidence in the predictions and improve generalization
+💡 Note: Another loss was considered which is supposed to perform better for highly imbalanced data - LDAM loss, which have been inplemented in tensorflow, enspired by  https://github.com/kaidic/LDAM-DRW
+However, this loss is only for multi-class, in order to use it for two classes, one needs to remove the activation in the last dense layer, which is not optimal. 
 
 
 ### 4. Learning Rate schedulers 
-Lr schedulers tend to help to reduce overfitting significantly. Use CosibeDecay lr shcedular. Shows much better performance theen the static learning rate. 
+Lr schedulers tend to help to reduce overfitting significantly. Use CosibeDecay lr shcedular. Shows much better performance then the static learning rate. 
 PolynomialDecay scheduler is also implemented for the test purposes. 
 
 
@@ -75,7 +75,7 @@ The baseline model is a convolutional neural network consisting of :
 Three convolutional blocks:
  
    -- Conv2D layers + BatchNorm + ReLU + MaxPolling + Dropout (0.3, 0.4 and 0.5 in each conv block)
-   -- L2 regularization applied to convolutional layers (0.001)
+   -- L2 regularization applied to convolutional layers (0.01)
    
 Delse layers for classification with last signmoid activation 
 
@@ -88,22 +88,28 @@ A hyperparameter scan was also performed to find the optimal number of filters, 
 
 The model performed best with:
 
-\begin{itemize}
- \item batch_size = 32
+* tem batch_size = 32
 
- \item learning_rate = 0.0001
+* start learning_rate = 1e-4
 
- \item cosine learning rate scheduler enabled
+* CosineDecay learning rate scheduler enabled with min lr=1e-5
 
- \end{itemize}
+* Early stopping based on validati0on balanced accuracy 
 
-The evaluation metric used was balanced accuracy, which is especially important for this imbalanced dataset (ISIC). The best performance was achieved at epoch 11, with:
+* The BinaryFocalCrossEntropy loss has been optimized for best performance, with gamma factor = 3 
 
- -- Balanced Accuracy: 73%
+The evaluation metric used was balanced accuracy, which is critically important for highly imbalanced dataset like ISIC 2020. The best performance was recorded at epoch 8 where:
 
- -- AUC (ROC): 82% 
+ -- Validation Balanced Accuracy: 73%
+
+ -- Validation AUC (ROC): 79% 
  
- ![train/validation loss curves ](images/loss_batch32_customNN.png)
+ ![train/validation loss curves ](images/Loss_customCNN.png)
+ ![train/validation balanced acuracy curves ](images/Bccuracy_customCNN.png)
+
+ Despite both training and validation losses decreasing over time, the balanced accuracy starts to deteriorate, indicating that the model begins to overfit and favor the majority class (target = 0).
+ 
+
 
 ### Dataset handling
 
@@ -129,17 +135,53 @@ The train data has been devided into train and validation sample with ratio 80:2
 
 ## Experimnetations and Model extensions
 
-Beyond CNN, other models have been explored, using mor emodern technique such as Transformers. 
+In addition to the custom CNN, modern architectures and techniques were explored, including EfficientNet and Vision Transformers (ViT).
 
-1. Transfer Learning with EfficientNetB2 - pretrained on ImageNet, fine tunes 10 last layers 
-2. Vision Transformers 
+### Transfer Learning + Fine-tuning (EfficientNetB2):
+
+EfficientNetB2, pretrained on ImageNet, was chosen as it offers a good trade-off between model size and performance. Most EfficientNet variants require high-resolution inputs, so 260×260 was selected to match EfficientNetB2's expected input size and to stay close to the custom CNN configuration for the comparison purposes. 
+
+Two-stage fine-tuning strategy is adopted:
+
+1. Feature Extraction - All EfficientNetB2 layers frozen; a GlobalAveragePooling layer and a top dense classifier with Dropout(0.5) were added.
+2. Fine-tuning - The last 10 layers of the EfficientNetB2 backbone were unfrozen and retrained.
+
+
+#### Training Configuration:
+ -- Loss: BinaryFocalCrossEntropy with gamma=3, label_smoothing=0.1\
+ -- Optimizer: Adam\
+ -- LR (feature extraction): 1e-4 (constant)\
+ -- LR (fine-tuning): 1e-5 (cosideDecay)\
+ -- Early stopping: patience=2, monitoring val_loss (feature extraction); patience=5, monitor val_balanced_accuracy (fine-tuning)
+
+#### Results after fine-tuning 
+Balanced accuracy: 69%
+
+AUC (ROC): 84%
+
+These are solid results considering the model size and training limits. Further improvements could likely be achieved using larger variants such as EfficientNetB6, which were not tested here due to resource constraints.
+
+
+### Vision Transformers 
+
+
+<!-- 2. Vision Transformers 
 3. Synthetic Sample Generation using Diffusion. 
     This is a big apportunity to test the stable difusion model image generation.
     The model which has been used is form hugging face transformers 🤗  located here: 
-    This migh provide more balanced data configuration 
+    This migh provide more balanced data configuration  -->
 
 
 
 
 
+## Benchmarking Against Published Work
+ 
+These results were compared to other works on melanoma classification. While some report high accuracy or AUC, most:
+   -- do not provide full evaluation metrics (especially recall or balanced accuracy)
+   -- do not address class imbalance beyond basic data augmentation
 
+Referenced papers: 
+ 1. https://www.nature.com/articles/s41598-024-75143-4 
+ 2. https://link.springer.com/article/10.1007/s11042-022-13847-3 
+ 3. https://arxiv.org/pdf/2010.05351 
