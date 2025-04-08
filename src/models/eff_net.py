@@ -14,8 +14,12 @@ class EfficientNetBase(tf.keras.Model):
 
     def unfreeze_top_layers(self, num_layers=10):
         #Unfreeze the layers in the EffNetB2 
+        #Make sure you do not unfreeze the BatchNorm layers 
         for layer in self.feature_extractor.layers[-num_layers:]:
-            layer.trainable = True
+            if not isinstance(layer, tf.keras.layers.BatchNormalization):
+                layer.trainable = True
+            else:
+                layer.trainable = False
 
 
     def call(self, input, training=False):
