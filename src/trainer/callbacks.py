@@ -11,6 +11,7 @@ class SaveEachEpoch(tf.keras.callbacks.Callback):
         super().__init__()
         self.save_dir = save_dir
         self.monitor = monitor
+        os.makedirs(save_dir, exist_ok=True)
 
     def on_epoch_end(self, epoch, logs=None):
         metric_value = logs.get(self.monitor)
