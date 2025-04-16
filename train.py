@@ -3,7 +3,8 @@ import tensorflow as tf
 import numpy as np
 from src.trainer.callbacks import get_callbacks
 from src.models.custom_cnn import MelanomaClassifier
-from src.utils import  calculate_class_weights, get_lr_shedular
+from src.models.ViT import VIT
+from src.utils import  calculate_class_weights, get_lr_shedular, make_model 
 from src.models.eff_net import EfficientNetBase
 from src.trainer.model_fit import Classifier 
 from src.metrics.custom_metrics import BalancedAccuracy, CustomF1Score 
@@ -48,8 +49,11 @@ def pipeline(cfg: DictConfig) -> None:
     if cfg.model.name == 'customCNN':
         model = MelanomaClassifier(cfg)
     
-    elif cfg.model.name== 'effnetb2':
+    elif cfg.model.name == 'effnetb2':
         model = EfficientNetBase(cfg)
+    elif cfg.model.name == 'transformer':
+        model = make_model(VIT(cfg), MelanomaClassifier(cfg))
+       
 
     ##We can check the summary of the model 
     _ = model(tf.random.normal((1, 256, 256, 3)))
@@ -68,6 +72,8 @@ def pipeline(cfg: DictConfig) -> None:
         logging.info("The mode is train. Start the training cycle")
         if cfg.model.name == 'effnetb2':
             model.feature_extractor.trainable = False #Just to make sure its not going to train
+         
+
         
         model_trainer = Classifier(model, experiment_name=cfg.experiment_name)
 
@@ -77,7 +83,7 @@ def pipeline(cfg: DictConfig) -> None:
             
 
         logging.info("Compiling the model")
-        model_trainer.compile(optimizer=tf.keras.optimizers.Adam(learning_rate = lr_schedule if cfg.model.name=='customCNN' else cfg.lr),
+        model_trainer.compile(optimizer=tf.keras.optimizers.Adam(learning_rate = lr_schedule if cfg.model.name=='customCNN' or cfg.model.name=='transformer' else cfg.lr),
                               loss=tf.keras.losses.BinaryFocalCrossentropy(label_smoothing=cfg.label_smoothing, gamma=cfg.gamma),
                               metrics_list=metrics)
         

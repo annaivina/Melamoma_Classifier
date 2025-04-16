@@ -4,7 +4,7 @@ dataset:
   dir_path: "/Users/annushka/Desktop/Melanoma_CLassifier/Melamoma_Classifier/datasets/preprocessed_images/" #dir where train/test folders are located
   csv_train: "/Users/annushka/Desktop/Melanoma_CLassifier/Melanoma_all_models/Melamoma_Classifier/datasets/ISIC_2020_Training_GroundTruth.csv"
   csv_test: "/Users/annushka/Desktop/Melanoma_CLassifier/Melanoma_all_models/Melamoma_Classifier/datasets/ISIC_2020_Test_Metadata.csv"
-  batch_size: 32
+  batch_size: 16
   img_size: 256 #for the custom CNN
   train_val_split: 0.8
   model_name: "customCNN"
@@ -16,7 +16,7 @@ params:
   lr: 0.0004
   epochs: 20 
   lr_shedule: "cosine"
-  label_smoothing: 0.1
+  label_smoothing: 0.0
 
 model_params:
   cnn:

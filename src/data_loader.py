@@ -1,6 +1,7 @@
 import tensorflow as tf
 import os
 import pandas as pd 
+from sklearn.utils import shuffle
 
 class DataLoader:
     def __init__(self, dataset, csv_train, csv_test, batch_size, img_size, train_val_split=0.8, eff_net=False):
@@ -41,24 +42,37 @@ class DataLoader:
         except ValueError as e:
               raise("The csvs for train and test are not provided!")
               
-              
-        X = df_train['image_name'].tolist()
-        y = df_train['target'].tolist()
+        df_pos = df_train[df_train['target'] == 1]
+        df_neg = df_train[df_train['target'] == 0]
+
+        # Split class 1: 80% train, 20% validation
+        df_pos_train = df_pos.sample(frac=self.train_val_split)
+        df_pos_val = df_pos.drop(df_pos_train.index)
+        
+        # Do the same for class 0
+        df_neg_train = df_neg.sample(frac=self.train_val_split)
+        df_neg_val = df_neg.drop(df_neg_train.index)
+
+        # Combine and shuffle each set
+        df_train = shuffle(pd.concat([df_pos_train, df_neg_train], axis=0))
+        df_val = shuffle(pd.concat([df_pos_val, df_neg_val], axis=0))
+
+        X_train = df_train['image_name'].tolist()
+        y_train = df_train['target'].tolist()
+        
+        X_val = df_val['image_name'].tolist()
+        y_val = df_val['target'].tolist()
+
+        ds_train  = tf.data.Dataset.from_tensor_slices((X_train, y_train))
+        ds_valid  = tf.data.Dataset.from_tensor_slices((X_val, y_val))
+   
+        dataset_train = ds_train.map(lambda x, y: self.load_image(images_train, x, y, augment=True, train=True, is_eff_net=self.eff_net), num_parallel_calls=2).batch(self.batch_size).prefetch(1)
+        dataset_valid = ds_valid.map(lambda x, y: self.load_image(images_train, x, y, augment=False, train=True, is_eff_net=self.eff_net), num_parallel_calls=2).batch(self.batch_size).prefetch(1)
+        
+
         X_test = df_test['image'].tolist()
-
-        datasets = tf.data.Dataset.from_tensor_slices((X, y))
-        datasets = datasets.shuffle(3000)
-        
-        train_size = int(self.train_val_split * len(X))
-        #Define the datsets for train and validation 
-        dataset_train = datasets.take(train_size)
-        dataset_valid = datasets.skip(train_size)
-
-        dataset_train = dataset_train.map(lambda x, y: self.load_image(images_train, x, y, augment=True, train=True, is_eff_net=self.eff_net), num_parallel_calls=2).batch(self.batch_size).prefetch(1)
-        dataset_valid = dataset_valid.map(lambda x, y: self.load_image(images_train, x, y, augment=False, train=True, is_eff_net=self.eff_net), num_parallel_calls=2).batch(self.batch_size).prefetch(1)
-        
         dataset_test = tf.data.Dataset.from_tensor_slices((X_test))
-        dataset_test = dataset_test.map(lambda x: self.load_image(images_test, x, augment=False, train=False), num_parallel_calls=2)
+        dataset_test = dataset_test.map(lambda x: self.load_image(images_test, x, augment=False, train=False, is_eff_net=self.eff_net), num_parallel_calls=2)
         dataset_test = dataset_test.shuffle(1000).batch(self.batch_size).prefetch(1)
 
 

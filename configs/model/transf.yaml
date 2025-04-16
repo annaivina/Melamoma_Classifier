@@ -1,0 +1,9 @@
+name: "transformer"
+
+embed_dim: 512
+dropout_trans: 0.3
+dropout_mlp_out: 0.4
+n_heads: 12
+n_layers: 2
+n_dense_units: 128
+weight_decay: 1e-4
