@@ -3,8 +3,9 @@ import tensorflow as tf
 import numpy as np
 from src.trainer.callbacks import get_callbacks
 from src.models.custom_cnn import MelanomaClassifier
+from src.models.hybrid import HybridModel
 from src.models.ViT import VIT
-from src.utils import  calculate_class_weights, get_lr_shedular, make_model 
+from src.utils import  calculate_class_weights, get_lr_shedular
 from src.models.eff_net import EfficientNetBase
 from src.trainer.model_fit import Classifier 
 from src.metrics.custom_metrics import BalancedAccuracy, CustomF1Score 
@@ -52,7 +53,13 @@ def pipeline(cfg: DictConfig) -> None:
     elif cfg.model.name == 'effnetb2':
         model = EfficientNetBase(cfg)
     elif cfg.model.name == 'transformer':
-        model = make_model(VIT(cfg), MelanomaClassifier(cfg))
+        vit_model = VIT(cfg)
+        cnn_model = MelanomaClassifier(cfg)
+        model = HybridModel(vit_model=vit_model, 
+                            cnn_model=cnn_model,
+                              weight_path = cfg.weight_path, 
+                              input_shape=(cfg.img_size,cfg.img_size,3), 
+                              freeze_cnn=True)
        
 
     ##We can check the summary of the model 
@@ -64,7 +71,7 @@ def pipeline(cfg: DictConfig) -> None:
     class_weights_dict, len_y_train = calculate_class_weights(train_data)
 
     #Define metrics to use:
-    metrics = [BalancedAccuracy(name='accuracyB'), tf.keras.metrics.BinaryAccuracy(), tf.keras.metrics.AUC(curve="ROC")]#While using custom loop you need to specify fully your accuracy 
+    metrics = [BalancedAccuracy(name='accuracyB'), tf.keras.metrics.BinaryAccuracy(name='accuracy'), tf.keras.metrics.AUC(curve="ROC", name="auc_roc"), tf.keras.metrics.Recall(name='recall')]#While using custom loop you need to specify fully your accuracy 
    
 
     ##mode=train (stage 1 for transfer learning)
@@ -83,7 +90,13 @@ def pipeline(cfg: DictConfig) -> None:
             
 
         logging.info("Compiling the model")
-        model_trainer.compile(optimizer=tf.keras.optimizers.Adam(learning_rate = lr_schedule if cfg.model.name=='customCNN' or cfg.model.name=='transformer' else cfg.lr),
+
+        if cfg.optimizer == 'adam':
+            optimizer = tf.keras.optimizers.Adam(learning_rate = lr_schedule if cfg.model.name=='customCNN' else cfg.lr)
+        elif cfg.optimizer == 'adamw':
+            optimizer = tf.keras.optimizers.AdamW(learning_rate=lr_schedule, weight_decay=cfg.model.weight_decay),
+
+        model_trainer.compile(optimizer=optimizer,
                               loss=tf.keras.losses.BinaryFocalCrossentropy(label_smoothing=cfg.label_smoothing, gamma=cfg.gamma),
                               metrics_list=metrics)
         

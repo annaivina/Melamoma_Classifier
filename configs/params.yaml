@@ -1,7 +1,8 @@
 #Training parameters 
 lr: 0.0001
-epochs: 20 
+optimiser: adam #there is adamw for the ViT
+epochs: 25
 lr_shedule: "cosine"
-label_smoothing: 0.1
-restore_best_weights: True
+label_smoothing: 0.0
+restore_best_weights: False #thisa is because I changed to save_all_epochs
 gamma: 3

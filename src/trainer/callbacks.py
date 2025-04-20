@@ -41,7 +41,7 @@ def get_callbacks(cfg, experiment_name='', model_name='', use_lrshedular=False):
         logging.error("Failed to create directories: {e}")
         return None
     
-    early_stopping = tf.keras.callbacks.EarlyStopping(monitor=cfg.monitor, patience=cfg.patience, mode=cfg.mode, restore_best_weights=cfg.restore_best_weights)#restore best weights shall be False if use the save_each_epoch
+    early_stopping = tf.keras.callbacks.EarlyStopping(monitor=cfg.monitor, patience=cfg.patience, mode=cfg.mode_save, restore_best_weights=cfg.restore_best_weights)#restore best weights shall be False if use the save_each_epoch
     model_checkpoint = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_dir+'best_model.keras', monitor=cfg.monitor)
     save_each_epoch = SaveEachEpoch(save_dir=checkpoint_dir, monitor=cfg.monitor)
     csv_logger = tf.keras.callbacks.CSVLogger(filename=log_dir+'training.csv', separator='.')

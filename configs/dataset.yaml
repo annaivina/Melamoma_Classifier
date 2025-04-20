@@ -1,7 +1,8 @@
 dir_path: "/Users/annushka/Desktop/Melanoma_CLassifier/Melamoma_Classifier/datasets/preprocessed_images/" #dir where train/test folders are located
 csv_train: "/Users/annushka/Desktop/Melanoma_CLassifier/Melanoma_all_models/Melamoma_Classifier/datasets/ISIC_2020_Training_GroundTruth.csv"
 csv_test: "/Users/annushka/Desktop/Melanoma_CLassifier/Melanoma_all_models/Melamoma_Classifier/datasets/ISIC_2020_Test_Metadata.csv"
-batch_size: 16
+weight_path: "/Users/annushka/Desktop/Melanoma_CLassifier/Melanoma_all_models/Melamoma_Classifier/images/ensb_1/model_epoch10_val_recall_0.8034.weights.h5"
+batch_size: 16 #for transfomer model 32 is much better, CNN is totally ok.
 img_size: 256 #260 for the effb2 model 
 train_val_split: 0.8
 num_classes: 1 #aka 0 or 1 

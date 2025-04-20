@@ -45,17 +45,17 @@ def get_lr_shedular(cfg, len_y_train, type, mode):
                                  target_lr=5e-6, 
                                  alpha=0.1)
     
-    def make_model(model_1 = tf.keras.models.Model, model_2=tf.keras.models.Model):
-        #Take feature extractor form the CNN
-        model_2.compile(optimizer='adam', loss=tf.keras.losses.BinaryFocalCrossentropy(label_smoothing=0.1, gamma=3),metrics=['accuracy'])
-        _ = model_2(tf.zeros((1,256,256,3)), training=False)
-        model_2.load_weights('images/best_model_cnn_custom_epoch8.weights.h5')
-        feature_extr = model_2.FeatureExtractor
-        feature_extr.trainable = False
+def make_model(model_1 = tf.keras.models.Model, model_2=tf.keras.models.Model):
+    #Take feature extractor form the CNN
+    model_2.compile(optimizer='adam', loss=tf.keras.losses.BinaryFocalCrossentropy(label_smoothing=0.0, gamma=3),metrics=['accuracy'])
+    _ = model_2(tf.zeros((1,256,256,3)), training=False)
+    model_2.load_weights('images/best_model_cnn_custom_epoch8.weights.h5')
+    feature_extr = model_2.FeatureExtractor
+    feature_extr.trainable = False
 
-        #TRake ViT and combine 
-        input = tf.keras.layers.Input(shape=(256,256,3))
-        x = feature_extr(input)
-        output = model_1(x)
+    #TRake ViT and combine 
+    input = tf.keras.layers.Input(shape=(256,256,3))
+    x = feature_extr(input)
+    output = model_1(x)
         
-        return tf.keras.models.Model(inputs=input, outputs=output)
+    return tf.keras.models.Model(inputs=input, outputs=output)

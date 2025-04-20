@@ -1,4 +1,4 @@
-monitor: "val_accuracyB"
+monitor: "val_accuracyB" # also can be 'val_recall' and 'val_auc_roc'
 min_lr: 0.1 #10 persent form the starting lr
 patience: 5
-mode: 'max' #for val accuracy, set to min for val_loss
+mode_save: 'max' #for val accuracy, set to min for val_loss

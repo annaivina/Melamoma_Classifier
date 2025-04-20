@@ -24,7 +24,7 @@ This repository implements a complete deep learning pipeline for melanoma classi
 
 
 ## Class imbalance handling
-The ISIC dataser is highly imbalanced (very few melanoma samples). The dataset can be found here: https://challenge2020.isic-archive.com/ 
+The ISIC dataser is highly imbalanced (very few melanoma samples 1.7\% of melanoma positive pictures). The dataset can be found here: https://challenge2020.isic-archive.com/ 
 
 The issue is addressed using the following twiks:
 
@@ -49,7 +49,7 @@ The augmentation is applied only to the positive class (aka target = 1). The aug
 
 ### 3. Special losses
 Focal loss, specifically BinaryFocalCrossentropy(), is used to emphasize learning on harder to classify samples (https://arxiv.org/pdf/1708.02002 )
-Additionally, label smoothing of 0.1 is applied to reduce overconfidence in the predictions and improve generalization
+
 
 💡 Note: Another loss was considered which is supposed to perform better for highly imbalanced data - LDAM loss, which have been inplemented in tensorflow, enspired by  https://github.com/kaidic/LDAM-DRW
 However, this loss is only for multi-class, in order to use it for two classes, one needs to remove the activation in the last dense layer, which is not optimal. 
@@ -64,10 +64,15 @@ PolynomialDecay scheduler is also implemented for the test purposes.
 
 Standard binary accuracy is very misleading for highly imbalanced data. This doesnt seem to be addressed in the majority papers where ISIC data is classified using NN. Instead of classical accuracy following metrics are more tracked:
 
-1. Balanced Accuracy : Everage of sensitivity ansd specificity (applied as custom metric)
-2. F1 score  which is focued on the balance between precidion and recall 
-3. AUC (ROC) and AUC(PR) metrics better suiting for this task 
+1. Balanced Accuracy:\
+The average of sensitivity (recall for the positive class) and specificity (recall for the negative class). This is implemented as a custom metric to fairly evaluate performance across both classes.
 
+
+2. AUC (ROC) and AUC (PR):\
+These metrics assess the quality of ranking and are less biased by class imbalance. AUC-PR is especially informative when positives are rare.
+
+3. Recall:\
+Arguably the most critical metric for melanoma detection, as it reflects the model’s ability to minimize false negatives. In medical applications, missing a positive case (false negative) can be far more dangerous than a false alarm.
 
 ## Custom CNN model
 The baseline model is a convolutional neural network consisting of :
@@ -88,27 +93,45 @@ A hyperparameter scan was also performed to find the optimal number of filters, 
 
 The model performed best with:
 
-* tem batch_size = 32
+* tem batch_size = 16
 
 * start learning_rate = 1e-4
 
 * CosineDecay learning rate scheduler enabled with min lr=1e-5
 
-* Early stopping based on validati0on balanced accuracy 
+* Early stopping based on validation Recall 
 
 * The BinaryFocalCrossEntropy loss has been optimized for best performance, with gamma factor = 3 
 
-The evaluation metric used was balanced accuracy, which is critically important for highly imbalanced dataset like ISIC 2020. The best performance was recorded at epoch 8 where:
 
- -- Validation Balanced Accuracy: 73%
+### Evaluation strategy 
+
+The primary evaluation metrics used were Recall, Balanced Accuracy, and AUC (ROC) — all of which are critically important for handling the highly imbalanced nature of the ISIC 2020 melanoma dataset.
+
+To improve performance and generalization, an ensemble of custom CNN models was used to make the final predictions. Each model in the ensemble was trained with a specific focus:
+
+1. One optimized for maximum recall
+
+2. One for best balanced accuracy
+
+3. One for highest AUC (ROC)
+
+The predictions of these models were then averaged to produce the final output. \
+Validation result on the Ensemble of models:\
+
+ -- Validation Balanced Accuracy: 71%
 
  -- Validation AUC (ROC): 79% 
- 
- ![train/validation loss curves ](images/Loss_customCNN.png)
- ![train/validation balanced acuracy curves ](images/Bccuracy_customCNN.png)
 
- Despite both training and validation losses decreasing over time, the balanced accuracy starts to deteriorate, indicating that the model begins to overfit and favor the majority class (target = 0).
+ -- Recall 71%
+
+ -- Accuracy 72%
  
+ ![Example of train/validation loss curves ](images/loss_cnn.png)
+ ![Example of train/validation balanced acuracy curves ](images/baccuracy_cnn.png)
+  ![Example of train/validation AUC(ROC) curves ](images/auc_roc_cnn.png)
+
+
 
 
 ### Dataset handling
@@ -129,8 +152,16 @@ A correlation analysis was performed to assess whether metadata like age or sex 
 
 Demographic features were not included in the model as they showed no strong correlation with the target.
 
-The train data has been devided into train and validation sample with ratio 80:20. Thus train sample has 26k and validation 6k. The splitting can also be changed in the config file. 
+To ensure the target class (melanoma = 1) is fairly represented in both the training and validation sets, the data was stratified manually as follows:
 
+1. Separate Class Labels:\
+The dataset was split into two subsets based on the target label (target = 0 and target = 1).
+
+2. Stratified Split:\
+An 80:20 split was applied to each class separately, ensuring that the rare positive class (target = 1) has sufficient representation in both sets.
+
+3. Balanced Merge:\
+The resulting train/validation subsets were then recombined, maintaining a similar class distribution in both sets. This helps the model generalize better and prevents skewed evaluation metrics due to class imbalance.
 
 
 ## Experimnetations and Model extensions
@@ -144,35 +175,86 @@ EfficientNetB2, pretrained on ImageNet, was chosen as it offers a good trade-off
 Two-stage fine-tuning strategy is adopted:
 
 1. Feature Extraction - All EfficientNetB2 layers frozen; a GlobalAveragePooling layer and a top dense classifier with Dropout(0.5) were added.
-2. Fine-tuning - The last 10 layers of the EfficientNetB2 backbone were unfrozen and retrained.
+2. Fine-tuning - The last 10 layers of the EfficientNetB2 backbone were unfrozen and retrained.(BatchNorm layers are left frozen)
 
 
 #### Training Configuration:
- -- Loss: BinaryFocalCrossEntropy with gamma=3, label_smoothing=0.1\
+ -- Loss: BinaryFocalCrossEntropy with gamma=3, label_smoothing=0.0\
  -- Optimizer: Adam\
  -- LR (feature extraction): 1e-4 (constant)\
  -- LR (fine-tuning): 1e-5 (cosideDecay)\
  -- Early stopping: patience=2, monitoring val_loss (feature extraction); patience=5, monitor val_balanced_accuracy (fine-tuning)
 
 #### Results after fine-tuning 
-Balanced accuracy: 69%
+Balanced accuracy: 67%
 
-AUC (ROC): 84%
+AUC (ROC): 78%
 
-These are solid results considering the model size and training limits. Further improvements could likely be achieved using larger variants such as EfficientNetB6, which were not tested here due to resource constraints.
+These are solid results considering the model size and training limits. Further improvements could likely be achieved using larger variants such as EfficientNetB6, which were not tested here due to resource constraints. Also they would probablly overfit much faster taking into account the small size of the dataset. 
 
-
-### Vision Transformers 
-
-
-<!-- 2. Vision Transformers 
-3. Synthetic Sample Generation using Diffusion. 
-    This is a big apportunity to test the stable difusion model image generation.
-    The model which has been used is form hugging face transformers 🤗  located here: 
-    This migh provide more balanced data configuration  -->
+The number of frozn layers were also studies, but the best performance was achived with last 10 layers unfrozn. 
 
 
+## Vision Transformer (ViT) with Custom CNN Backbone
+In this hybrid model architecture, a custom-built CNN is used as a feature extractor, while a Vision Transformer (ViT) is trained on top of its frozen outputs.
 
+Unlike traditional ViTs that split raw images into fixed-size patches, here the input to the ViT is the output of the CNN's feature_extractor layer, with shape (None, 7, 7, 128). This approach allows us to:
+
+ -- Leverage convolutional inductive bias early on,
+
+ -- Reuse well-learned spatial features,
+
+ -- And offload heavy low-level computation to the CNN.
+
+### ViT Architecture
+1. Patch Embedding:
+
+The CNN output is reshaped to serve as patch tokens.
+
+A Dense layer projects them to the desired embedding dimension.
+
+Positional embeddings are added to retain spatial awareness.
+
+2. Transformer Encoder:
+
+2 Transformer blocks (multi-head self-attention + MLP).
+
+Number of heads: 12.
+
+Dropout and layer normalization applied appropriately.
+
+3. Output Head:
+
+Global average pooling,
+
+Followed by a classification head (MLP).
+
+### Training Strategy & Key Insight
+During experimentation, it was observed that the ViT performs best when the CNN backbone was trained and saved based on the highest Recall, rather than more common metrics like accuracy and loss.
+
+This choice is not a standard practice — most models monitor general-purpose metrics like loss or accuracy. However, in the context of medical imaging with extreme class imbalance, this choice is both rational and impactful.
+
+False negatives are costly: Missing a melanoma case can have serious consequences.
+
+Recall emphasizes sensitivity: A model optimized for recall is more likely to catch these rare positive cases.
+
+This gives the ViT access to more informative features, especially for minority class learning.
+
+🧠 While not commonly done, using Recall as the selection metric for CNN weights proved highly effective and improved all downstream metrics when used as a ViT backbone.
+
+### Results
+
+-- Balanced Accuracy 73%
+
+-- Recall 76%
+ 
+-- AUC (ROC) 81%
+
+-- Accuracy 70%
+
+
+![Example of Loss ](images/loss_vit.png)
+![Example of balanced accuracy](images/baccuracy_vit.png)
 
 
 ## Benchmarking Against Published Work
