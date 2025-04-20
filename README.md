@@ -1,16 +1,14 @@
 # Melanoma Classification - Deep learning Pipeline (ISIC dataset)
 
-This repository implements a complete deep learning pipeline for melanoma classification using the ISIC skin lesion dataset. It explores a custom CNN and more advanced models like EfficientNetB2 and Vision Transformers (ViT), tackling real-world challenges such as extreme class imbalance, overfitting, and generalization to rare samples.
+This repository implements a complete deep--learning pipeline for melanoma classification using the ISIC skin lesion dataset. It explores a custom CNN and more advanced models like EfficientNetB2 and Vision Transformers (ViT), tackling real-world challenges such as extreme class imbalance, overfitting, and generalization to rare samples.
 
 ## Key Features
 
-✅ Custom CNN trained from scratch (implemented in tensorflow)
+✅ Custom CNN trained from scratch 
 
 ✅ Transfer learning with EfficientNetB2 + fine-tuning 
 
 ✅ Vision Transformer (ViT) support
-
-✅ Synthetic data generalisation using Stable Difusion via Hugging Face 🤗 
 
 ✅ Class imbalance handling: augmentation, weighting, and Focal Loss
 
@@ -20,13 +18,15 @@ This repository implements a complete deep learning pipeline for melanoma classi
 
 ✅ Learning rate scheduling (CosineDecay, PolynomialDecay)
 
-✅ Modular pipeline structure wuith config-based experiment management 
+✅ Modular pipeline structure with config-based experiment management 
+
+✅ Implemented fully in TensorFlow 2.18 with custom training and model definition
 
 
 ## Class imbalance handling
-The ISIC dataser is highly imbalanced (very few melanoma samples 1.7\% of melanoma positive pictures). The dataset can be found here: https://challenge2020.isic-archive.com/ 
+The ISIC dataset is highly imbalanced (very few melanoma samples 1.7\% of melanoma--positive pictures). The dataset can be found here: https://challenge2020.isic-archive.com/ 
 
-The issue is addressed using the following twiks:
+This challenge is addressed using the following techniques:
 
 ### 1. Class weights
  Dynamically computed using sklearn's compute_class_weight() and passed into model.fit(class_weight=...).
@@ -51,25 +51,24 @@ The augmentation is applied only to the positive class (aka target = 1). The aug
 Focal loss, specifically BinaryFocalCrossentropy(), is used to emphasize learning on harder to classify samples (https://arxiv.org/pdf/1708.02002 )
 
 
-💡 Note: Another loss was considered which is supposed to perform better for highly imbalanced data - LDAM loss, which have been inplemented in tensorflow, enspired by  https://github.com/kaidic/LDAM-DRW
-However, this loss is only for multi-class, in order to use it for two classes, one needs to remove the activation in the last dense layer, which is not optimal. 
+💡 Note: Another loss was considered, which is supposed to perform better for highly imbalanced data - LDAM loss, which has been implemented in TensorFlow, inspired by  https://github.com/kaidic/LDAM-DRW
+However, this loss is only for multi-class; in order to use it for two classes, one needs to remove the activation in the last dense layer, which is not optimal in Tensorflow.
 
 
 ### 4. Learning Rate schedulers 
-Lr schedulers tend to help to reduce overfitting significantly. Use CosibeDecay lr shcedular. Shows much better performance then the static learning rate. 
-PolynomialDecay scheduler is also implemented for the test purposes. 
+Lr schedulers help to reduce overfitting significantly. Use CosineDecay lr schedular. Shows much better performance then the static learning rate. 
+PolynomialDecay scheduler has also been implemented for test purposes. 
 
 
 ## Evaluation Metrics
 
-Standard binary accuracy is very misleading for highly imbalanced data. This doesnt seem to be addressed in the majority papers where ISIC data is classified using NN. Instead of classical accuracy following metrics are more tracked:
+Standard binary accuracy is very misleading for highly imbalanced data. This is not addressed in the majority of papers where ISIC data is classified using NN. Instead of classical accuracy, the following metrics are tracked more:
 
 1. Balanced Accuracy:\
-The average of sensitivity (recall for the positive class) and specificity (recall for the negative class). This is implemented as a custom metric to fairly evaluate performance across both classes.
-
+The average of sensitivity (Recall for the positive class) and specificity (Recall for the negative class). This is implemented as a custom metric to fairly evaluate performance across both classes.
 
 2. AUC (ROC) and AUC (PR):\
-These metrics assess the quality of ranking and are less biased by class imbalance. AUC-PR is especially informative when positives are rare.
+These metrics assess the ranking quality and are less biased by class imbalance. AUC-PR is especially informative when positives are rare.
 
 3. Recall:\
 Arguably the most critical metric for melanoma detection, as it reflects the model’s ability to minimize false negatives. In medical applications, missing a positive case (false negative) can be far more dangerous than a false alarm.
@@ -82,12 +81,12 @@ Three convolutional blocks:
    -- Conv2D layers + BatchNorm + ReLU + MaxPolling + Dropout (0.3, 0.4 and 0.5 in each conv block)
    -- L2 regularization applied to convolutional layers (0.01)
    
-Delse layers for classification with last signmoid activation 
+Delse layers for classification with last sigmoid activation 
 
 ### Training configurations 
 The model configuration, the training configuration as well as model setup can be found in Melanoma_Classifier/configs/ (model/customCNN.yaml)
 
-Due to limit resoursses, first the model has been prototyped in Google Colab notebook: https://colab.research.google.com/drive/15iZRsk7ALNFwI0LnjF6MqXW0u0ScOkrn?usp=sharing. Then, fully migrated to this modular training pipeline. 
+Due to limited resources, first, the model has been prototyped in Google Colab notebook: https://colab.research.google.com/drive/15iZRsk7ALNFwI0LnjF6MqXW0u0ScOkrn?usp=sharing. Then, fully migrated to this modular training pipeline. 
 
 A hyperparameter scan was also performed to find the optimal number of filters, dropout rates, strides, and other model parameters.
 
@@ -138,9 +137,9 @@ Validation result on the Ensemble of models:\
 
 The original ISIC dataset consists of high-resolution dermoscopic images, which are computationally expensive to train on, especially for mid-sized custom CNNs. Therefore, images were resized to 256×256 resolution (see notebook https://github.com/annaivina/Melamoma_Classifier/blob/main/datasets/Inspect_Datasets.ipynb )
 
-The lables are provided in the csv file together with additional information https://github.com/annaivina/Melamoma_Classifier/blob/main/datasets/ISIC_2020_Training_GroundTruth.csv 
+The labels are provided in the csv file together with additional information https://github.com/annaivina/Melamoma_Classifier/blob/main/datasets/ISIC_2020_Training_GroundTruth.csv 
 
-Additionally, the CSV file containes other information such as sex, age, ect. \
+Additionally, the CSV file contains other information such as sex, age, ect. \
 A correlation analysis was performed to assess whether metadata like age or sex could assist prediction. Correlation coefficients were found to be low:
 
 |            | sex      | age_approx | target   |
@@ -164,13 +163,13 @@ An 80:20 split was applied to each class separately, ensuring that the rare posi
 The resulting train/validation subsets were then recombined, maintaining a similar class distribution in both sets. This helps the model generalize better and prevents skewed evaluation metrics due to class imbalance.
 
 
-## Experimnetations and Model extensions
+## Experimentation and Model extensions
 
 In addition to the custom CNN, modern architectures and techniques were explored, including EfficientNet and Vision Transformers (ViT).
 
 ### Transfer Learning + Fine-tuning (EfficientNetB2):
 
-EfficientNetB2, pretrained on ImageNet, was chosen as it offers a good trade-off between model size and performance. Most EfficientNet variants require high-resolution inputs, so 260×260 was selected to match EfficientNetB2's expected input size and to stay close to the custom CNN configuration for the comparison purposes. 
+EfficientNetB2, pretrained on ImageNet, was chosen as it offers a good trade-off between model size and performance. Most EfficientNet variants require high-resolution inputs, so 260×260 was selected to match EfficientNetB2's expected input size and to stay close to the custom CNN configuration for comparison purposes. 
 
 Two-stage fine-tuning strategy is adopted:
 
@@ -190,9 +189,9 @@ Balanced accuracy: 67%
 
 AUC (ROC): 78%
 
-These are solid results considering the model size and training limits. Further improvements could likely be achieved using larger variants such as EfficientNetB6, which were not tested here due to resource constraints. Also they would probablly overfit much faster taking into account the small size of the dataset. 
+These are promising results, especially given the resource constraints and limited data. Further improvements could be achieved using larger variants such as EfficientNetB6, which were not tested here due to resource constraints. Also, they would overfit much faster, taking into account the small size of the dataset. 
 
-The number of frozn layers were also studies, but the best performance was achived with last 10 layers unfrozn. 
+The number of frozen layers was also studied, but the best performance was achieved with the last 10 layers unfrozen. 
 
 
 ## Vision Transformer (ViT) with Custom CNN Backbone
@@ -207,27 +206,37 @@ Unlike traditional ViTs that split raw images into fixed-size patches, here the 
  -- And offload heavy low-level computation to the CNN.
 
 ### ViT Architecture
-1. Patch Embedding:
+1. Patch Embedding
 
-The CNN output is reshaped to serve as patch tokens.
+ -- The output from the CNN feature extractor ((None, 7, 7, 128)) is reshaped into patch tokens.
 
-A Dense layer projects them to the desired embedding dimension.
+ -- A Dense layer projects these tokens into the desired embedding dimension.
 
-Positional embeddings are added to retain spatial awareness.
+ -- Learnable positional embeddings are added to retain spatial information.
 
-2. Transformer Encoder:
+2. Transformer Encoder
 
-2 Transformer blocks (multi-head self-attention + MLP).
+ -- Consists of 2 Transformer blocks, each containing multi-head self-attention and an MLP.
 
-Number of heads: 12.
+ -- The number of attention heads is set to 12.
 
-Dropout and layer normalization applied appropriately.
+ -- Layer normalization and dropout are applied within each block for stability and regularization.
 
-3. Output Head:
+3. Classification Head
 
-Global average pooling,
+ -- A GlobalAveragePooling1D layer aggregates the output sequence.
 
-Followed by a classification head (MLP).
+ -- This is followed by an MLP and a final Dense layer with a sigmoid activation for binary classification.
+
+ -- Training Strategy
+
+ -- Training is performed using a Warmup + Cosine Decay learning rate schedule:
+
+start_lr = 1e-6,
+
+target_lr = 5e-6,
+
+alpha = 0.1 (minimum LR fraction).
 
 ### Training Strategy & Key Insight
 During experimentation, it was observed that the ViT performs best when the CNN backbone was trained and saved based on the highest Recall, rather than more common metrics like accuracy and loss.
@@ -258,12 +267,27 @@ This gives the ViT access to more informative features, especially for minority 
 
 
 ## Benchmarking Against Published Work
- 
-These results were compared to other works on melanoma classification. While some report high accuracy or AUC, most:
-   -- do not provide full evaluation metrics (especially recall or balanced accuracy)
-   -- do not address class imbalance beyond basic data augmentation
+
+These results were compared to other studies on melanoma classification. While some papers report high accuracy or AUC, most:
+
+ -- Do not provide a complete set of evaluation metrics, especially recall or balanced accuracy
+
+ -- Do not address the class imbalance issue beyond basic augmentation techniques
+
+ -- Often do not disclose whether class weighting or focal loss was used
+
+As a result, many reported accuracy scores are likely inflated due to biased evaluation on imbalanced data. In contrast, this project explicitly incorporates class imbalance handling, recall-focused evaluation, and specialized loss functions (e.g., BinaryFocalCrossentropy) for a more honest and medically-relevant performance assessment.
 
 Referenced papers: 
  1. https://www.nature.com/articles/s41598-024-75143-4 
  2. https://link.springer.com/article/10.1007/s11042-022-13847-3 
  3. https://arxiv.org/pdf/2010.05351 
+
+
+ # Conclusion 
+ This project demonstrates a full-cycle deep learning pipeline for melanoma classification on highly imbalanced data. From model experimentation to custom loss functions, metric tracking, and ensemble strategies, each step was designed with medical data sensitivity in mind.
+
+The results highlight that thoughtful metric monitoring (such as recall) and hybrid architectures (CNN + ViT) can yield strong performance even with limited data.
+
+Future directions could include expanding the ensemble, applying this framework to other medical datasets, or porting the pipeline to PyTorch for broader adoption.
+
