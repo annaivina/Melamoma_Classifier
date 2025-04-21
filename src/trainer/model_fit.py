@@ -35,17 +35,21 @@ class Classifier(tf.keras.Model):
         with tf.GradientTape() as record:
             y_pred = self.model(X, training=True)
             loss = self.loss(y, y_pred, sample_weight = sample_weight)
+            
+            #regularisation loss because i forgot it :D and also because i overwrite train_step()
+            reg_loss = tf.add_n(self.model.losses) if self.model.losses else 0.0 
+            total_loss = loss + reg_loss
 
-        training_vars = self.trainable_variables
-        gradients = record.gradient(loss, training_vars)
+      
+        gradients = record.gradient(total_loss, self.trainable_variables))
 
-        self.optimizer.apply_gradients(zip(gradients, training_vars))
+        self.optimizer.apply_gradients(zip(gradients, self.trainable_variables)))
 
         for metric in self.metrics:
             metric.update_state(y, y_pred, sample_weight = sample_weight)
            
 
-        result = {'loss': loss,  **{m.name: m.result() for m in self.metrics}}#so we can log it into comet
+        result = {'loss': total_loss,  **{m.name: m.result() for m in self.metrics}}#so we can log it into comet
         
         return result
     
