@@ -37,6 +37,7 @@ class Classifier(tf.keras.Model):
             loss = self.loss(y, y_pred, sample_weight = sample_weight)
             
             #regularisation loss because i forgot it :D and also because i overwrite train_step()
+            #Also because i have regularisation L2 applied to the Conv layers
             reg_loss = tf.add_n(self.model.losses) if self.model.losses else 0.0 
             total_loss = loss + reg_loss
 
