@@ -38,6 +38,7 @@ class Classifier(tf.keras.Model):
             
             #regularisation loss because i forgot it :D and also because i overwrite train_step()
             #Also because i have regularisation L2 applied to the Conv layers
+            #Also note this includes the time when i train transformer with nor refularisation (which shall not be there apart from weight_decay)
             reg_loss = tf.add_n(self.model.losses) if self.model.losses else 0.0 
             total_loss = loss + reg_loss
 
