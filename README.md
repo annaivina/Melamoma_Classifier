@@ -125,11 +125,13 @@ Validation result on the Ensemble of models:\
  -- Recall 71%
 
  -- Accuracy 72%
- 
- ![Example of train/validation loss curves ](images/loss_cnn.png)
- ![Example of train/validation balanced acuracy curves ](images/baccuracy_cnn.png)
-  ![Example of train/validation AUC(ROC) curves ](images/auc_roc_cnn.png)
 
+Example of training/validation loss, balanced accuracy and AUC ROC curve
+<p align="center">
+ <img src="./images/loss_cnn.png" alt="Loss" width="30%"/>
+ <img src="./images/baccuracy_cnn.png" alt="Balanced accuracy" width="30%"/>
+ <img src="./images/auc_roc_cnn.png" alt="AUC ROC" width="30%"/>
+</p>
 
 
 
@@ -261,9 +263,12 @@ This gives the ViT access to more informative features, especially for minority 
 
 -- Accuracy 70%
 
+<p align="center">
+ <img src="./images/loss_vit.png" alt="Loss" width="45%"/>
+ <img src="./images/baccuracy_vit.png" alt="Balanced accuracy" width="30%"/>
+</p>
 
-![Example of Loss ](images/loss_vit.png)
-![Example of balanced accuracy](images/baccuracy_vit.png)
+
 
 
 ## Benchmarking Against Published Work
