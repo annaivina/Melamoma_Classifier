@@ -265,7 +265,7 @@ This gives the ViT access to more informative features, especially for minority 
 
 <p align="center">
  <img src="./images/loss_vit.png" alt="Loss" width="45%"/>
- <img src="./images/baccuracy_vit.png" alt="Balanced accuracy" width="30%"/>
+ <img src="./images/baccuracy_vit.png" alt="Balanced accuracy" width="45%"/>
 </p>
 
 
